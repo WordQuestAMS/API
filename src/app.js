@@ -49,7 +49,7 @@ const diccionarioSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  usos: {
+  uso: {
     type: Number,
     default: 0
   }
@@ -143,12 +143,16 @@ app.post('/api/dictionary/browse', async (req, res) => {
       idioma: language // Filter by language
     }).skip(skip).limit(10); // Pagination
 
+    console.log(words);
+
     // Format words into desired response format
     const formattedWords = words.map(word => ({
       palabra: word.palabra,
       idioma: word.idioma,
-      usos: word.usos
+      uso: word.uso
     }));
+
+    console.log(formattedWords);
 
     return res.status(200).json({ status: 'OK', message: 'Dictionary data obtained successfully', data: formattedWords });
   } catch (error) {
