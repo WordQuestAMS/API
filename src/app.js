@@ -4,6 +4,7 @@ const dbConfig = require('./config/db');
 const userRoutes = require('./api/routes/userRoutes');
 const Event = require('./api/models/event');
 const Diccionarios = require('./api/models/diccionarios')
+const Users = require('./api/models/users')
 const app = express();
 
 app.use(express.json());
@@ -11,36 +12,6 @@ app.set('json spaces', 2);
 
 mongoose.connect(dbConfig.MONGODB_URI).then(() => console.log("Connectat a MongoDB"))
   .catch(err => console.error("No s'ha pogut connectar a MongoDB", err));
-
-const userSchema = new mongoose.Schema({
-  uuid: {
-    type: String,
-    required: true
-  },
-  nickname: {
-    type: String,
-    required: true
-  },
-  email: {
-    type: String,
-    required: true
-  },
-  phone_number: {
-    type: String,
-    required: true
-  },
-  avatar: {
-    type: String,
-    required: true
-  },
-  api_key: {
-    type: String,
-    required: true
-  }
-});
-
-const User = mongoose.model('Usuarios', userSchema);
-
 
 app.get('/api/health', (req, res) => {
   res.json({ status: "OK" });
@@ -79,9 +50,6 @@ app.post('/api/user/register', async (req, res) => {
       return res.status(400).json({ status: 'ERROR', message: 'Missing input parameters' });
     }
 
-    // Decode base64 avatar to save as image
-    const avatarPath = base64Img.imgSync(avatar, './avatars', uuid.v4());
-
     // Generate UUID for the user
     const uuidValue = uuid.v4();
 
@@ -92,9 +60,9 @@ app.post('/api/user/register', async (req, res) => {
     const newUser = new User({
       uuid: uuidValue,
       nickname: name,
-      email,
-      phone_number,
-      avatar: avatarPath,
+      email: email,
+      phone_number: phone_number,
+      avatar: avatar,
       api_key: apiKey
     });
 
