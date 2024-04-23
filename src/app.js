@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const dbConfig = require('./config/db');
 const userRoutes = require('./api/routes/userRoutes');
 const Event = require('./api/models/event');
+const Diccionarios = require('./api/models/diccionarios')
 const app = express();
 
 app.use(express.json());
@@ -39,23 +40,6 @@ const userSchema = new mongoose.Schema({
 });
 
 const User = mongoose.model('Usuarios', userSchema);
-
-const diccionarioSchema = new mongoose.Schema({
-  palabra: {
-    type: String,
-    required: true
-  },
-  idioma: {
-    type: String,
-    required: true
-  },
-  uso: {
-    type: Number,
-    default: 0
-  }
-});
-
-const Diccionario = mongoose.model('Diccionarios', diccionarioSchema);
 
 
 app.get('/api/health', (req, res) => {
@@ -127,22 +111,10 @@ app.post('/api/user/register', async (req, res) => {
 
 app.post('/api/dictionary/browse', async (req, res) => {
   try {
-    const { initial, pageNumber, language } = req.body;
+    // Directly fetch the first 10 entries from the Diccionario collection
+    const words = await Diccionarios.find().limit(10);
 
-    // Validate input parameters
-    if (!initial || !pageNumber || !language) {
-      return res.status(400).json({ status: 'ERROR', message: 'Missing input parameters' });
-    }
-
-    // Calculate skip value based on pageNumber
-    const skip = (pageNumber - 1) * 10;
-
-    // Query to fetch words from the diccionarios collection
-    const words = await Diccionario.find({
-      palabra: { $regex: `^${initial}`, $options: 'i' }, // Case insensitive match for initial letter
-      idioma: language // Filter by language
-    }).skip(skip).limit(10); // Pagination
-
+    // Log fetched words to console for debugging
     console.log(words);
 
     // Format words into desired response format
@@ -152,10 +124,13 @@ app.post('/api/dictionary/browse', async (req, res) => {
       uso: word.uso
     }));
 
+    // Log formatted words to console for debugging
     console.log(formattedWords);
 
+    // Return a successful response with the formatted data
     return res.status(200).json({ status: 'OK', message: 'Dictionary data obtained successfully', data: formattedWords });
   } catch (error) {
+    // Log the error to console and return an error response
     console.error(error);
     return res.status(500).json({ status: 'ERROR', message: 'Dictionary data could not be obtained' });
   }
