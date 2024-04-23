@@ -13,8 +13,8 @@ app.set('json spaces', 2);
 mongoose.connect(dbConfig.MONGODB_URI).then(() => console.log("Connectat a MongoDB"))
   .catch(err => console.error("No s'ha pogut connectar a MongoDB", err));
 
-app.get('/api/health', (req, res) => {
-  res.json({ status: "OK" });
+app.get('/api/bienvenida', (req, res) => {
+  res.json({ status: "Bienvenido al servidor" });
 });
 
 app.use('/api', userRoutes);
