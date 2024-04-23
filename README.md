@@ -1,85 +1,42 @@
-# Plantilla projecte NodeJS amb Maven DAM2-MP06 #
+# WordQuestDB
 
-# Estructura de Carpetes API
+¡Bienvenido a WordQuestDB, la base de datos diseñada para respaldar la funcionalidad del emocionante juego WordQuest! Esta base de datos está destinada a ser enlazada con una API en JavaScript para proporcionar una experiencia de juego fluida tanto para la versión de un jugador como para el multijugador en línea de WordQuest.
 
-Dins del directori `api`, trobem diverses subcarpetes que organitzen el codi de l'aplicació segons diferents responsabilitats. Aquesta estructura ajuda a mantenir el codi net, modular i fàcil de mantenir.
+## Descripción del Juego
 
-## controllers
+WordQuest es un juego de palabras que desafía tu habilidad para formar palabras a partir de un conjunto de letras dispuestas en un rosco. Los jugadores pueden disfrutar de la versión de un jugador para competir contra sí mismos o participar en emocionantes partidas multijugador en línea.
 
-Els `controllers` són responsables de gestionar la lògica d'aplicació. Quan una ruta rep una petició, el controlador processa aquesta petició, interactua amb models o serveis si és necessari, i finalment retorna una resposta al client.
+## Estructura de la Base de Datos
 
-### Contingut:
+WordQuestDB está diseñada con una estructura que permite almacenar información esencial para el juego, incluyendo:
 
-- Funcions que manejen peticions HTTP (GET, POST, PUT, DELETE, etc.).
-- Interacció amb els models de dades per a consultes a la base de dades.
-- Validació de dades d'entrada i maneig d'errors.
-- Enviament de respostes HTTP amb els resultats o missatges d'error corresponents.
+### Colecciones
 
-## middlewares
+1. **Diccionarios:**
+   - Esta colección almacena las palabras utilizadas en el juego.
+   - Cada palabra se guarda con su idioma correspondiente, un identificador único (ID) y el número de veces que ha sido utilizada en las partidas.
 
-Els `middlewares` són funcions que s'executen entre la petició entrant i el controlador que finalment processa la petició. S'utilitzen per a tasques com la verificació d'autenticació, el registre, la manipulació de peticions i respostes, i el maneig d'errors.
+2. **Usuarios:**
+   - Aquí se guardan los perfiles de los jugadores.
+   - La información incluye la puntuación de cada jugador, su nombre, la cantidad de partidas jugadas y otros detalles relevantes.
 
-### Contingut:
+3. **Registros de Partidas:**
+   - Esta colección mantiene un registro de las partidas realizadas.
+   - Contiene información sobre las partidas individuales, como los jugadores involucrados, la duración de la partida y los resultados.
 
-- Autenticació i autorització.
-- Validació de tokens o sessions.
-- Registre de peticions.
-- Tractament d'errors globals.
-- Cors i seguretat addicional.
+4. **Historial de Acciones:**
+   - Guarda un registro de las acciones realizadas durante las partidas.
+   - Incluye detalles como las palabras formadas, los movimientos de los jugadores y otros eventos importantes.
 
-## models
+## Enlace con la API en JavaScript
 
-Els `models` defineixen l'estructura de les dades que s'utilitzen dins de l'aplicació, normalment corresponent a les col·leccions o taules de la base de dades. S'utilitzen per a interactuar amb la base de dades per a crear, llegir, actualitzar i eliminar dades (CRUD).
+La base de datos WordQuestDB se integra perfectamente con una API en JavaScript que proporciona acceso y funcionalidad para el juego WordQuest. Esta API permite a los desarrolladores implementar las características del juego tanto para la versión de un jugador como para el multijugador en línea.
 
-### Contingut:
+Para obtener más detalles sobre cómo utilizar la base de datos y la API, consulta la documentación correspondiente en los siguientes enlaces:
 
-- Esquemes de Mongoose per a MongoDB.
-- Definicions de models Sequelize per a SQL.
-- Mètodes personalitzats per a manipulació de models.
+- [Documentación de WordQuestDB](link_to_documentation)
+- [API de WordQuest en JavaScript](link_to_api)
 
-## routes
+¡Gracias por tu interés en WordQuest! Esperamos que disfrutes del juego tanto como nosotros disfrutamos creándolo.
 
-Les `routes` defineixen els endpoints de l'API i associen peticions HTTP entrants amb els controladors específics que haurien de manejar-les.
-
-### Contingut:
-
-- Definició dels endpoints de l'API.
-- Associació de rutes amb les funcions dels controladors.
-- Especificació dels mètodes HTTP (GET, POST, PUT, DELETE).
-
-## services
-
-Els `services` contenen la lògica d'aplicació reutilitzable que no està directament lligada a les peticions i respostes HTTP. Això pot incloure la lògica de negoci, com ara operacions de base de dades, integracions de tercers i algorismes complexos.
-
-### Contingut:
-
-- Operacions de base de dades reutilitzables.
-- Comunicació amb serveis externs o APIs.
-- Funcions d'ajuda per a realitzar tasques comunes dins de l'aplicació.
-
-
-# Arrencada ràpida de l'API ##
-```
-npm run clean
-npm install
-npm run build
-npm start
-```
-
-# MongoDB, posada en marxa
-Consultar readme.md dins del directori ./etc/mongdb-docker
-Un cop arrencat, assegurar-se de crear la base de dades "dam2-mp06-uf04" (A través de la interfície web)
-Un cop arrencat, assegurar-se de crear la base de dades "dam2-mp06-uf04-test" (A través de la interfície web)
-
-
-# Execució eines importació
-node src/utils/import_posts.js
-node src/utils/import_users.js
-
-
-# Tests
-## Exemple d'insersió d'un esdeveniment
-curl -X POST http://localhost:3000/api/events \
--H "Content-Type: application/json" \
--d '{"name":"Event Name","date":"2023-04-05T09:00:00Z","description":"Event Description"}'
-
+---
