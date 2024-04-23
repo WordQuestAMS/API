@@ -6,6 +6,8 @@ const Event = require('./api/models/event');
 const Diccionarios = require('./api/models/diccionarios')
 const Users = require('./api/models/users')
 const app = express();
+const { v4: uuidv4 } = require('uuid');
+const crypto = require('crypto');
 
 app.use(express.json());
 app.set('json spaces', 2);
@@ -51,18 +53,22 @@ app.post('/api/user/register', async (req, res) => {
     }
 
     // Generate UUID for the user
-    const uuidValue = uuid.v4();
+    const uuidValue = uuidv4();
 
-    // Generate API Key
-    const apiKey = bcrypt.hashSync(uuid.v4(), 10);
+    function generateApiKey(length = 64) {
+      return crypto.randomBytes(Math.ceil(length / 2)).toString('hex').slice(0, length);
+    }
+    const apiKey = generateApiKey(64);
+
+    console.log("Uuid: " + uuidValue, "ApiKey: " + apiKey);
 
     // Create new user object using the User model
-    const newUser = new User({
+    const newUser = new Users({
       uuid: uuidValue,
       nickname: name,
-      email: email,
-      phone_number: phone_number,
-      avatar: avatar,
+      email,
+      phone_number,
+      avatar,
       api_key: apiKey
     });
 
