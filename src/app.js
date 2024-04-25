@@ -62,14 +62,17 @@ app.post('/api/user/register', async (req, res) => {
 
     console.log("Uuid: " + uuidValue, "ApiKey: " + apiKey);
 
+    const currentDate = new Date().toLocaleString('en-US', options);
+
     // Create new user object using the User model
     const newUser = new Users({
       
-      id: uuidValue,
+      uuid: uuidValue,
       nickname: name,
       email,
       phone_number,
       avatar,
+      creation_date: currentDate,
       api_key: apiKey
     });
 
@@ -86,10 +89,22 @@ app.post('/api/user/register', async (req, res) => {
 
 app.post('/api/dictionary/browse', async (req, res) => {
   try {
-    // Directly fetch the first 10 entries from the Diccionario collection
-    const words = await Diccionarios.find().limit(10);
+    const { initial, pageNumber, language } = req.body;
 
-    // Log fetched words to console for debugging
+    // Validate input parameters
+    if (!initial || !pageNumber || !language) {
+      return res.status(400).json({ status: 'ERROR', message: 'Missing input parameters' });
+    }
+
+    // Calculate skip value based on pageNumber
+    const skip = (pageNumber - 1) * 10;
+
+    // Query to fetch words from the diccionarios collection
+    const words = await Diccionario.find({
+      palabra: { $regex: `^${initial}`, $options: 'i' }, // Case insensitive match for initial letter
+      idioma: language // Filter by language
+    }).skip(skip).limit(10); // Pagination
+
     console.log(words);
 
     // Format words into desired response format
@@ -99,13 +114,10 @@ app.post('/api/dictionary/browse', async (req, res) => {
       uso: word.uso
     }));
 
-    // Log formatted words to console for debugging
     console.log(formattedWords);
 
-    // Return a successful response with the formatted data
     return res.status(200).json({ status: 'OK', message: 'Dictionary data obtained successfully', data: formattedWords });
   } catch (error) {
-    // Log the error to console and return an error response
     console.error(error);
     return res.status(500).json({ status: 'ERROR', message: 'Dictionary data could not be obtained' });
   }

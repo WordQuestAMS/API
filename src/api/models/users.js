@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 // Define the schema for the users model
 const userSchema = new mongoose.Schema({
-  id: {
+  uuid: {
     type: String,
     required: true,
     unique: true
@@ -21,6 +21,10 @@ const userSchema = new mongoose.Schema({
   },
   avatar: {
     type: String,
+    required: true
+  },
+  creation_date: {
+    type: Date,
     required: true
   },
   api_key: {
