@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const autoIncrement = require('mongoose-auto-increment');
 
 // Define the schema for the users model
 const userSchema = new mongoose.Schema({
@@ -29,9 +28,6 @@ const userSchema = new mongoose.Schema({
   }
 }, {collection: "users"});
 
-
-autoIncrement.initialize(mongoose.connection);
-userSchema.plugin(autoIncrement.plugin, { model: 'User', field: '_id' });
 
 // Compile and export the users model
 const User = mongoose.model('Usuarios', userSchema);
