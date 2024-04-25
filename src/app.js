@@ -1,7 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const dbConfig = require('./config/db');
-const userRoutes = require('./api/routes/userRoutes');
 const Event = require('./api/models/event');
 const Diccionarios = require('./api/models/diccionarios')
 const Users = require('./api/models/users')
@@ -19,7 +18,6 @@ app.get('/api/bienvenida', (req, res) => {
   res.json({ status: "Bienvenido al servidor" });
 });
 
-app.use('/api', userRoutes);
 
 app.post('/api/events', async (req, res) => {
   try {
@@ -62,7 +60,7 @@ app.post('/api/user/register', async (req, res) => {
 
     console.log("Uuid: " + uuidValue, "ApiKey: " + apiKey);
 
-    const currentDate = new Date().toLocaleString('en-US', options);
+    const currentDate = new Date();
 
     // Create new user object using the User model
     const newUser = new Users({
@@ -116,7 +114,7 @@ app.post('/api/dictionary/browse', async (req, res) => {
 
     console.log(formattedWords);
 
-    return res.status(200).json({ status: 'OK', message: 'Dictionary data obtained successfully', data: formattedWords });
+    return res.status(200).json({ status: 'OK', message: 'Dictionary data obtained successfully', data: formattedWords});
   } catch (error) {
     console.error(error);
     return res.status(500).json({ status: 'ERROR', message: 'Dictionary data could not be obtained' });

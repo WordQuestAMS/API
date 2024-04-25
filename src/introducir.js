@@ -29,7 +29,7 @@ async function main() {
           _id: idCounter, // Asigna el ID actual
           palabra: palabra,
           idioma: idioma,
-          uso: '0' // Inicialmente "0"
+          uso: 0 // Inicialmente "0"
         };
         await collection.insertOne(doc);
         idCounter++; // Incrementa el contador de ID para el siguiente documento
