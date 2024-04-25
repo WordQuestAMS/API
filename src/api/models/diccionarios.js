@@ -18,6 +18,6 @@ const DiccionarioSchema = new mongoose.Schema({
 },{collection: "Diccionarios"});
 
 // Compile and export the diccionarios model
-const Diccionario = mongoose.model('Diccionario', DiccionarioSchema);
+const Diccionarios = mongoose.model('Diccionarios', DiccionarioSchema);
 
 module.exports = Diccionario;
