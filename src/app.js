@@ -65,7 +65,7 @@ app.post('/api/user/register', async (req, res) => {
     // Create new user object using the User model
     const newUser = new Users({
       
-      uuid: uuidValue,
+      id: uuidValue,
       nickname: name,
       email,
       phone_number,
