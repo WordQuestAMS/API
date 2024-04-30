@@ -37,15 +37,10 @@ const joc = new Joc(60000, 60000);  // 1 minut de partida, 1 minut de pausa
 io.on('connection', (socket) => {
   console.log('Usuari connectat');
   
-  const intervalId = setInterval(() => {
+  let intervalId = setInterval(() => {
     const resposta = joc.consultaTempsRestant();
     socket.emit('TEMPS_PER_INICI', resposta);
   }, 10000);  // Envia el temps restant cada 10 segons
-
-  const intervalId = setInterval(() => {
-    const resposta = joc.consultaTempsRestant();
-    socket.emit('TEMPS_PER_INICI', resposta);
-  }, 10000);
 
   socket.on('TEMPS_PER_INICI', () => {
     const resposta = joc.consultaTempsRestant();
