@@ -36,7 +36,7 @@ const joc = new Joc(60000, 60000);  // 1 minut de partida, 1 minut de pausa
 
 io.on('connection', (socket) => {
   console.log('Usuari connectat');
- 
+  
   socket.on('TEMPS_PER_INICI', () => {
     const resposta = joc.consultaTempsRestant();
     socket.emit('TEMPS_PER_INICI', resposta);
@@ -44,15 +44,16 @@ io.on('connection', (socket) => {
 
   socket.on('ALTA', (data) => {
     console.log(`Nickname: ${data.nickname}, API_KEY: ${data.apiKey}`);
-    // Añadir lógica para manejar el alta en la partida
+    // Aquí puedes agregar lógica para manejar la alta en la partida.
   });
 
   socket.on('PARAULA', (data) => {
     console.log(`Palabra recibida: ${data.split(';')[0].split('=')[1]}, API_KEY: ${data.split(';')[1].split('=')[1]}`);
-    // Añadir lógica para manejar la palabra recibida
+    // Aquí puedes agregar lógica para manejar la palabra recibida.
   });
+
   socket.onAny((event, ...args) => {
-    if (event !== 'consulta temps' && event !== 'disconnect' && event !== 'connect') {
+    if (!['consulta temps', 'disconnect', 'connect', 'TEMPS_PER_INICI', 'ALTA', 'PARAULA'].includes(event)) {
       console.log(`Comanda no reconeguda: ${event}`);
       const resposta = joc.consultaTempsRestant();
       socket.emit('TEMPS_PER_INICI', resposta);
@@ -61,7 +62,7 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     console.log('Usuari desconnectat');
-    clearInterval(intervalId);  // Atura l'enviament periòdic quan l'usuari es desconnecta
+    // No need to clear any interval here as it's set globally, not per user.
   });
 });
 
