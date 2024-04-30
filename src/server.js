@@ -61,6 +61,19 @@ io.on('connection', (socket) => {
     }
   });
 
+  // Maneja el evento 'PARAULA'
+  socket.on('PARAULA', (data) => {
+    // Deberías parsear la cadena para extraer correctamente la palabra y la API_KEY si es necesario
+    const params = data.split(';').reduce((acc, current) => {
+      const [key, value] = current.split('=');
+      acc[key] = value;
+      return acc;
+    }, {});
+
+    console.log(`Paraula rebuda: ${params.PALABRA}`);
+    // Añadir lógica de manejo de palabras si es necesario
+  });
+
   socket.on('disconnect', () => {
     console.log('Usuario desconectado');
   });
