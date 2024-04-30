@@ -33,39 +33,31 @@ class Joc {
 }
 
 const joc = new Joc(60000, 60000);  // 1 minut de partida, 1 minut de pausa
+
 io.on('connection', (socket) => {
-  console.log('Usuario conectado');
+  console.log('Usuari connectat');
+  
+  const intervalId = setInterval(() => {
+    const resposta = joc.consultaTempsRestant();
+    socket.emit('TEMPS_PER_INICI', resposta);
+  }, 10000);  // Envia el temps restant cada 10 segons
 
   socket.on('TEMPS_PER_INICI', () => {
-    const respuesta = joc.consultaTempsRestant();
-    socket.emit('TEMPS_PER_INICI', respuesta);
+    const resposta = joc.consultaTempsRestant();
+    socket.emit('TEMPS_PER_INICI', resposta);
   });
 
-  socket.on('ALTA', (data) => {
-    if (joc.esPotUnir()) {
-      console.log(`Usuario unido a la partida: Nickname: ${data.nickname}, API_KEY: ${data.apiKey}`);
-      // Aquí puedes añadir el usuario a la lista de jugadores, etc.
-    } else {
-      console.log('Intento de unirse a una partida ya comenzada');
-      socket.emit('ERROR', 'La partida ya ha comenzado');
+  socket.onAny((event, ...args) => {
+    if (event !== 'consulta temps' && event !== 'disconnect' && event !== 'connect') {
+      console.log(`Comanda no reconeguda: ${event}`);
+      const resposta = joc.consultaTempsRestant();
+      socket.emit('TEMPS_PER_INICI', resposta);
     }
   });
 
-  // Maneja el evento 'PARAULA'
-  socket.on('PARAULA', (data) => {
-    // Deberías parsear la cadena para extraer correctamente la palabra y la API_KEY si es necesario
-    const params = data.split(';').reduce((acc, current) => {
-      const [key, value] = current.split('=');
-      acc[key] = value;
-      return acc;
-    }, {});
-
-    console.log(`Paraula rebuda: ${params.PALABRA}`);
-    // Añadir lógica de manejo de palabras si es necesario
-  });
-
   socket.on('disconnect', () => {
-    console.log('Usuario desconectado');
+    console.log('Usuari desconnectat');
+    clearInterval(intervalId);  // Atura l'enviament periòdic quan l'usuari es desconnecta
   });
 });
 
