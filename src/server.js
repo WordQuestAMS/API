@@ -46,13 +46,14 @@ io.on('connection', (socket) => {
     socket.emit('TEMPS_PER_INICI', resposta);
   });
 
-  socket.on('ALTA', () => {
+  // Maneja el evento 'ALTA'
+  socket.on('ALTA', (data) => {
     if (joc.esPotUnir()) {
-      // Logica para unirse a la partida
-      console.log('Usuari unit a la partida');
+      console.log(`Usuario unido a la partida: Nickname: ${data.nickname}, API_KEY: ${data.apiKey}`);
+      // Aquí puedes añadir el usuario a la lista de jugadores, etc.
     } else {
-      console.log('Intent de unir-se a una partida ja començada');
-      socket.emit('ERROR', 'La partida ja ha començat');
+      console.log('Intento de unirse a una partida ya comenzada');
+      socket.emit('ERROR', 'La partida ya ha comenzado');
     }
   });
 

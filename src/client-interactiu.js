@@ -83,20 +83,24 @@ function altaAPartida() {
   esperantResposta = true;
   rl.question('Introduce tu nickname: ', (nickname) => {
     rl.question('Introduce tu API_KEY: ', (apiKey) => {
-      socket.emit('ALTA', `ALTA=${nickname};API_KEY=${apiKey}`);
+      // Formato de los datos a enviar en el formato correcto esperado por el servidor
+      socket.emit('ALTA', { nickname: nickname, apiKey: apiKey });
       esperantResposta = false;
       mostrarMenu();
     });
   });
 }
 
+
 function enviarPalabra() {
   esperantResposta = true;
   rl.question('Introduce la palabra que quieres enviar: ', (palabra) => {
     rl.question('Introduce tu API_KEY: ', (apiKey) => {
-      socket.emit('PALABRA', `PALABRA=${palabra};API_KEY=${apiKey}`);
+      // Asegúrate que el evento aquí coincide con lo que el servidor espera recibir
+      socket.emit('PARAULA', `PALABRA=${palabra};API_KEY=${apiKey}`);
       esperantResposta = false;
       mostrarMenu();
     });
   });
 }
+
