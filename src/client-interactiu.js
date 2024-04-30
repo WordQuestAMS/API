@@ -8,7 +8,7 @@ const rl = readline.createInterface({
 });
 
 // Connecta al servidor
-const socket = io('http://127.0.0.1:3000');
+const socket = io('https://roscodrom3.ieti.site');
 
 socket.on('connect', () => {
   console.log('Connectat al servidor');
