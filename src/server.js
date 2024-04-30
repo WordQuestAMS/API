@@ -42,11 +42,25 @@ io.on('connection', (socket) => {
     socket.emit('TEMPS_PER_INICI', resposta);
   }, 10000);  // Envia el temps restant cada 10 segons
 
+  const intervalId = setInterval(() => {
+    const resposta = joc.consultaTempsRestant();
+    socket.emit('TEMPS_PER_INICI', resposta);
+  }, 10000);
+
   socket.on('TEMPS_PER_INICI', () => {
     const resposta = joc.consultaTempsRestant();
     socket.emit('TEMPS_PER_INICI', resposta);
   });
 
+  socket.on('ALTA', (data) => {
+    console.log(`Nickname: ${data.nickname}, API_KEY: ${data.apiKey}`);
+    // Añadir lógica para manejar el alta en la partida
+  });
+
+  socket.on('PARAULA', (data) => {
+    console.log(`Palabra recibida: ${data.split(';')[0].split('=')[1]}, API_KEY: ${data.split(';')[1].split('=')[1]}`);
+    // Añadir lógica para manejar la palabra recibida
+  });
   socket.onAny((event, ...args) => {
     if (event !== 'consulta temps' && event !== 'disconnect' && event !== 'connect') {
       console.log(`Comanda no reconeguda: ${event}`);
