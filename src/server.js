@@ -56,9 +56,18 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on('PARAULA', (palabra) => {
-    console.log(`Paraula rebuda: ${palabra}`);
-    // Añadir lógica de manejo de palabras
+ 
+  // Maneja el evento 'PARAULA'
+  socket.on('PARAULA', (data) => {
+    // Deberías parsear la cadena para extraer correctamente la palabra y la API_KEY si es necesario
+    const params = data.split(';').reduce((acc, current) => {
+      const [key, value] = current.split('=');
+      acc[key] = value;
+      return acc;
+    }, {});
+
+    console.log(`Paraula rebuda: ${params.PALABRA}`);
+    // Añadir lógica de manejo de palabras si es necesario
   });
 
   const intervalId = setInterval(() => {
