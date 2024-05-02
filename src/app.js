@@ -98,7 +98,7 @@ app.post('/api/dictionary/browse', async (req, res) => {
     const skip = (pageNumber - 1) * 10;
 
     // Query to fetch words from the diccionarios collection
-    const words = await Diccionarios.find({
+    const words = await Diccionario.find({
       palabra: { $regex: `^${initial}`, $options: 'i' }, // Case insensitive match for initial letter
       idioma: language // Filter by language
     }).skip(skip).limit(10); // Pagination
