@@ -10,19 +10,21 @@ const rl = readline.createInterface({
 let esperantResposta = false;
 let tempsRestant = 'Pendiente de actualización';
 let enPartida = false;
+let enPrepartida = false;
 
-// Conecta al servidor
-const socket = io('https://roscodrom3.ieti.site');
+// Conexión al servidor local para fines de desarrollo
+const socket = io('http://127.0.0.1:3000');
 
 socket.on('connect', () => {
   console.log('Conectado al servidor');
-  solicitarTempsRegularmente();
+  solicitarEstadoRegularmente();
 });
 
-// Gestiona la respuesta del servidor para el tiempo de inicio
-socket.on('TEMPS_PER_INICI', (data) => {
+// Gestiona la respuesta del servidor con el estado actual del juego
+socket.on('ACTUALIZACION_ESTADO', (data) => {
   tempsRestant = `${data.tempsRestant} ms`;
   enPartida = data.enPartida ? 'Sí' : 'No';
+  enPrepartida = data.enPrepartida ? 'Sí' : 'No';
   if (!esperantResposta) {
     mostrarMenu();
   }
@@ -38,17 +40,17 @@ socket.on('connect_error', (error) => {
   console.error('Error de conexión:', error);
 });
 
-// Función para solicitar el tiempo cada 10 segundos
-function solicitarTempsRegularmente() {
+// Función para solicitar el estado cada 10 segundos
+function solicitarEstadoRegularmente() {
   setInterval(() => {
-    socket.emit('TEMPS_PER_INICI');
+    socket.emit('CONSULTA_ESTADO');
   }, 10000);
 }
 
 function mostrarMenu() {
-  console.log(`\nTiempo restante para el inicio: ${tempsRestant}, En Partida: ${enPartida}`);
+  console.log(`\nTiempo restante para el inicio: ${tempsRestant}, En Partida: ${enPartida}, En Prepartida: ${enPrepartida}`);
   console.log('Selecciona una opción:');
-  console.log('1: Consultar tiempo para el inicio');
+  console.log('1: Consultar estado del juego');
   console.log('2: Alta en la partida');
   console.log('3: Enviar palabra');
   console.log('4: Salir');
@@ -59,7 +61,7 @@ function mostrarMenu() {
     esperantResposta = false;
     switch (input) {
       case '1':
-        socket.emit('TEMPS_PER_INICI');
+        socket.emit('CONSULTA_ESTADO');
         break;
       case '2':
         altaAPartida();
@@ -83,7 +85,6 @@ function altaAPartida() {
   esperantResposta = true;
   rl.question('Introduce tu nickname: ', (nickname) => {
     rl.question('Introduce tu API_KEY: ', (apiKey) => {
-      // Formato de los datos a enviar en el formato correcto esperado por el servidor
       socket.emit('ALTA', { nickname: nickname, apiKey: apiKey });
       esperantResposta = false;
       mostrarMenu();
@@ -91,16 +92,13 @@ function altaAPartida() {
   });
 }
 
-
 function enviarPalabra() {
   esperantResposta = true;
   rl.question('Introduce la palabra que quieres enviar: ', (palabra) => {
     rl.question('Introduce tu API_KEY: ', (apiKey) => {
-      // Asegúrate que el evento aquí coincide con lo que el servidor espera recibir
-      socket.emit('PARAULA', `PALABRA=${palabra};API_KEY=${apiKey}`);
-      esperantResposta = false;
+      socket.emit('PARAULA', { palabra: palabra, apiKey: apiKey });
+      
       mostrarMenu();
     });
   });
 }
-
