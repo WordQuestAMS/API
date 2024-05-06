@@ -4,6 +4,7 @@ const dbConfig = require('./config/db');
 const Event = require('./api/models/event');
 const Diccionarios = require('./api/models/diccionarios')
 const Users = require('./api/models/users')
+const Partidas = require('./api/models/partidas')
 const app = express();
 const { v4: uuidv4 } = require('uuid');
 const crypto = require('crypto');
@@ -122,5 +123,176 @@ app.post('/api/dictionary/browse', async (req, res) => {
 });
 
 
+app.post('/api/games/newGame', async (req, res) => {
+  try {
+    // Create a new game entry
+    const newPartida = new Partidas({
+      start_time: null, 
+      end_time: null, 
+      players: [] 
+    });
+
+    // Save the new game entry to the database
+    await newPartida.save();
+
+    res.status(201).json({ message: 'New game created successfully', data: newPartida._id });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Failed to create game' });
+  }
+});
+
+
+app.post('/api/games/startGame', async (req, res) => {
+  try {
+    // Check if any users have joined during the pre-game status
+    const gameId = req.body.gameId;
+    const game = await Partidas.findById(gameId);
+
+    if (!game.players.length) {
+      // No users have joined, delete the game from the database
+      await Game.findByIdAndDelete(gameId);
+      return res.status(200).json({ message: 'No users joined the game. Game deleted.' });
+    }
+
+    // Users have joined, update the game start datetime
+    game.start_time = new Date();
+    await game.save();
+
+    res.status(200).json({ message: 'Game started successfully', gameId: gameId });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Failed to start game' });
+  }
+});
+
+
+app.post('/api/games/endGame', async (req, res) => {
+  try {
+    const gameId = req.body.gameId;
+    const game = await Partidas.findById(gameId);
+
+    if (!game) {
+      return res.status(404).json({ message: 'Game not found' });
+    }
+
+    if (game.end_time) {
+      return res.status(400).json({ message: 'Game has already ended' });
+    }
+
+    game.end_time = new Date();
+    await game.save();
+
+    res.status(200).json({ message: 'Game ended successfully', gameId: gameId });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Failed to end game' });
+  }
+});
+
+
+app.post('/api/games/addUser', async (req, res) => {
+  try {
+    const { gameId, nickname, apiKey } = req.body;
+
+    // Search for the user using the apiKey
+    const user = await User.findOne({ api_key: apiKey });
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    // Check if the game exists
+    const game = await Game.findById(gameId);
+    if (!game) {
+      return res.status(404).json({ success: false, message: 'Game not found' });
+    }
+
+    // Add the user to the game's players list
+    game.players.push({ user_id: user._id, score: 0 });
+    await game.save();
+
+    // Add the game to the user's games list
+    user.games.push({ partida_id: game._id, score: 0 });
+    await user.save();
+
+    return res.status(200).json({ success: true, message: 'User added to the game successfully' });
+  } catch (error) {
+    console.error('Error adding user to the game:', error);
+    return res.status(500).json({ success: false, message: 'Failed to add user to the game. Please try again later.' });
+  }
+});
+
+
+app.post('/api/games/removeUser', async (req, res) => {
+  try {
+    const { gameId, apiKey } = req.body;
+
+    // Search for the user using the apiKey
+    const user = await User.findOne({ api_key: apiKey });
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    // Check if the game exists
+    const game = await Game.findById(gameId);
+    if (!game) {
+      return res.status(404).json({ success: false, message: 'Game not found' });
+    }
+
+    // Remove the user from the game's players list
+    game.players = game.players.filter(player => !player.user_id.equals(user._id));
+    await game.save();
+
+    // Remove the game from the user's games list
+    user.games = user.games.filter(game => !game.partida_id.equals(gameId));
+    await user.save();
+
+    return res.status(200).json({ success: true, message: 'User removed from the game successfully' });
+  } catch (error) {
+    console.error('Error removing user from the game:', error);
+    return res.status(500).json({ success: false, message: 'Failed to remove user from the game. Please try again later.' });
+  }
+});
+
+
+app.post('/api/games/updateScore', async (req, res) => {
+  try {
+    const { gameId, apiKey, score } = req.body;
+
+    // Search for the user using the apiKey
+    const user = await User.findOne({ api_key: apiKey });
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    // Check if the game exists
+    const game = await Game.findById(gameId);
+    if (!game) {
+      return res.status(404).json({ success: false, message: 'Game not found' });
+    }
+
+    // Find the corresponding player in the game's players list
+    const playerIndex = game.players.findIndex(player => player.user_id.equals(user._id));
+    if (playerIndex === -1) {
+      return res.status(404).json({ success: false, message: 'User is not part of the game' });
+    }
+
+    // Update the score of the corresponding player in the game
+    game.players[playerIndex].score = score;
+    await game.save();
+
+    // Update the score of the user in their games list
+    const userGameIndex = user.games.findIndex(game => game.partida_id.equals(gameId));
+    if (userGameIndex !== -1) {
+      user.games[userGameIndex].score = score;
+      await user.save();
+    }
+
+    return res.status(200).json({ success: true, message: 'Score updated successfully' });
+  } catch (error) {
+    console.error('Error updating score:', error);
+    return res.status(500).json({ success: false, message: 'Failed to update score. Please try again later.' });
+  }
+});
 
 module.exports = app;

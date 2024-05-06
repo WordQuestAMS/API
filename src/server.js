@@ -8,10 +8,12 @@ const readline = require('readline');
 const path = require('path');
 const server = http.createServer(app);
 const io = new Server(server);
+const axios = require('axios');
 
 
 class Joc {
   constructor(partidaDuracio, pausaDuracio, prepartidaDuracio) {
+    this.gameId = 0;
     this.partidaDuracio = partidaDuracio;
     this.pausaDuracio = pausaDuracio;
     this.prepartidaDuracio = prepartidaDuracio;
@@ -28,29 +30,57 @@ class Joc {
     }, 1000); // Actualizar cada segundo.
   }
 
-  actualitzarEstat() {
+  async actualitzarEstat() {
     const tempsActual = Date.now();
     const tempsPassatDesDeProperInici = tempsActual - this.properInici;
 
     if (this.enPrepartida && tempsPassatDesDeProperInici >= 0) {
-      console.log('Inicio Prepartida');
+      console.log('Fin Prepartida');
       this.enPrepartida = false;
       this.enPartida = true;
       this.properInici = tempsActual + this.partidaDuracio;
+      try {
+        // Call the endpoint to create a new game when a user connects to the WebSocket server
+        const startGameResponse = await axios.post('http://localhost:3000/api/games/startGame', { gameId: gameId });
+        const message = response.data.message;
+        this.gameId = response.data.data; 
+        console.log(message, this.gameId);
+      } catch (error) {
+        console.error('Error starting game:', error);
+      }
       //console.log(`Partida comenzará, tiempo restante: ${this.partidaDuracio / 1000} segundos.`);
     } else if (this.enPartida && tempsPassatDesDeProperInici >= 0) {
       console.log('Fin Partida');
       this.enPartida = false;
       this.properInici = tempsActual + this.pausaDuracio;
+      try {
+        // Call the endpoint to create a new game when a user connects to the WebSocket server
+        const startGameResponse = await axios.post('http://localhost:3000/api/games/endGame', { gameId: gameId });
+        const message = response.data.message;
+        this.gameId = response.data.data; 
+        console.log(message, this.gameId);
+        this.gameId = 0;
+      } catch (error) {
+        console.error('Error ending game:', error);
+      }
       //console.log(`Pausa comenzará, tiempo restante: ${this.pausaDuracio / 1000} segundos.`);
     } else if (!this.enPartida && !this.enPrepartida && tempsPassatDesDeProperInici >= 0) {
       console.log('Fin Pausa');
       this.enPrepartida = true;
       this.properInici = tempsActual + this.prepartidaDuracio;
+      try {
+        // Call the endpoint to create a new game when a user connects to the WebSocket server
+        const response = await axios.post('http://localhost:3000/api/games/newGame');
+        const message = response.data.message;
+        this.gameId = response.data.data; 
+        console.log(message, this.gameId);
+      } catch (error) {
+        console.error('Error creating new game:', error);
+      }
       //console.log(`Prepartida comenzará, tiempo restante: ${this.prepartidaDuracio / 1000} segundos.`);
     }
     const tempsRestant = this.properInici - tempsActual;
-    //console.log(`Estado actual: ${this.enPartida ? 'En Partida' : this.enPrepartida ? 'En Prepartida' : 'En Pausa'}, Tiempo restante: ${tempsRestant / 1000} segundos.`);
+    console.log(`Estado actual: ${this.enPartida ? 'En Partida' : this.enPrepartida ? 'En Prepartida' : 'En Pausa'}, Tiempo restante: ${tempsRestant / 1000} segundos.`);
   }
 
   consultaTempsRestant() {
@@ -97,10 +127,13 @@ class Joc {
 }
 
 
-const joc = new Joc(60000, 60000, 10000);  // 1 minuto de juego, 1 minuto de pausa, 10 segundos de prepartida
+const joc = new Joc(60000, 60000, 20000);  // 1 minuto de juego, 1 minuto de pausa, 20 segundos de prepartida
 
 io.on('connection', (socket) => {
   console.log('Usuario conectado');
+
+  
+
 
   socket.emit('ESTADO_INICIAL', joc.consultaTempsRestant());
 
@@ -110,18 +143,50 @@ io.on('connection', (socket) => {
   });
 
   // Manejar alta en la partida
-  socket.on('ALTA', (data) => {
+  socket.on('ALTA', async (data) => {
     console.log(`Nickname: ${data.nickname}, API_KEY: ${data.apiKey}`);
-    // Aquí puedes agregar lógica para manejar la alta en la partida.
+    try {
+      // Call the endpoint to add the user to the game in MongoDB
+      const altaResponse = await axios.post('http://localhost:3000/api/games/addUser', {
+        gameId: joc.gameId, 
+        nickname: data.nickname,
+        apiKey: data.apiKey
+      });
+
+      // If the user is successfully added to the game, inform the client
+      if (altaResponse.data.success) {
+        console.log('User added to the game successfully');
+        // Emit an event to inform the client about the success
+        socket.emit('USER_ADDED_TO_GAME_SUCCESS', { message: 'User added to the game successfully' });
+      } else {
+        console.error('Failed to add user to the game');
+        // Emit an event to inform the client about the failure
+        socket.emit('USER_ADDED_TO_GAME_FAILURE', { message: 'Failed to add user to the game' });
+      }
+    } catch (error) {
+      console.error('Error adding user to the game:', error);
+      // Emit an event to inform the client about the error
+      socket.emit('USER_ADDED_TO_GAME_ERROR', { message: 'Failed to add user to the game. Please try again later.' });
+    }
   });
 
   socket.on('PARAULA', (data) => {
     let palabra = data.palabra.toUpperCase();
+    const apiKey = data.apiKey;
     console.log(`Palabra recibida: ${palabra}`);
-    joc.buscarPalabra(palabra, (existe) => {
+    joc.buscarPalabra(palabra, async (existe) => {
       if (existe) {
         const puntuacion = puntuacionPalabra.calcularPuntuacion(palabra);
         console.log(`La palabra '${palabra}' existe y su puntuación es ${puntuacion}.`);
+        try {
+          const response = await axios.post('http://localhost:3000/api/games/updateScore', {
+          gameId: joc.gameId,
+          apiKey: apiKey,
+          score: puntuacion
+        });
+        } catch (error) {
+
+        }
         socket.emit('RESULTADO_PALABRA', { palabra: palabra, existe: true, puntuacion: puntuacion });
       } else {
         console.log(`La palabra '${palabra}' no existe.`);
@@ -130,10 +195,32 @@ io.on('connection', (socket) => {
     });
   });
   
-  socket.on('disconnect', () => {
+  socket.on('disconnect', async (data) => {
     console.log('Usuario desconectado');
+    try {
+      // Call the endpoint to remove the user from the game in MongoDB if the game is in the pregame state
+      const removeUserResponse = await axios.post('http://localhost:3000/api/games/removeUser', {
+        apiKey: data.apiKey,
+        gameId: joc.gameId
+      });
+
+      // If the user is successfully removed from the game, inform the client
+      if (removeUserResponse.data.success) {
+        console.log('User removed from the game successfully');
+        // Emit an event to inform the client about the success
+        socket.emit('USER_REMOVED_FROM_GAME_SUCCESS', { message: 'User removed from the game successfully' });
+      } else {
+        console.error('Failed to remove user from the game');
+        // Emit an event to inform the client about the failure
+        socket.emit('USER_REMOVED_FROM_GAME_FAILURE', { message: 'Failed to remove user from the game' });
+      }
+    } catch (error) {
+      console.error('Error removing user from the game:', error);
+      // Emit an event to inform the client about the error
+      socket.emit('USER_REMOVED_FROM_GAME_ERROR', { message: 'Failed to remove user from the game. Please try again later.' });
+    }
   });
 });
 
-const port = process.env.PORT || 80;
+const port = process.env.PORT || 3000;
 server.listen(port, () => console.log(`Escuchando en el puerto ${port}...`));
