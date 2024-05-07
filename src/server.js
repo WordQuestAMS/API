@@ -39,7 +39,7 @@ class Joc {
       this.enPrepartida = false;
       this.enPartida = true;
       this.properInici = tempsActual + this.partidaDuracio;
-      try {
+      /*try {
         // Call the endpoint to create a new game when a user connects to the WebSocket server
         const startGameResponse = await axios.post('https://roscodrom3.ieti.site/api/games/startGame', { gameId: this.gameId });
         const message = response.data.message;
@@ -47,13 +47,13 @@ class Joc {
         console.log(message, this.gameId);
       } catch (error) {
         console.error('Error starting game:', error);
-      }
+      }*/
       //console.log(`Partida comenzará, tiempo restante: ${this.partidaDuracio / 1000} segundos.`);
     } else if (this.enPartida && tempsPassatDesDeProperInici >= 0) {
       console.log('Fin Partida');
       this.enPartida = false;
       this.properInici = tempsActual + this.pausaDuracio;
-      try {
+      /*try {
         // Call the endpoint to create a new game when a user connects to the WebSocket server
         const startGameResponse = await axios.post('https://roscodrom3.ieti.site/api/games/endGame', { gameId: this.gameId });
         const message = response.data.message;
@@ -62,13 +62,13 @@ class Joc {
         this.gameId = 0;
       } catch (error) {
         console.error('Error ending game:', error);
-      }
+      }*/
       //console.log(`Pausa comenzará, tiempo restante: ${this.pausaDuracio / 1000} segundos.`);
     } else if (!this.enPartida && !this.enPrepartida && tempsPassatDesDeProperInici >= 0) {
       console.log('Fin Pausa');
       this.enPrepartida = true;
       this.properInici = tempsActual + this.prepartidaDuracio;
-      try {
+      /*try {
         // Call the endpoint to create a new game when a user connects to the WebSocket server
         const response = await axios.post('https://roscodrom3.ieti.site/api/games/newGame');
         const message = response.data.message;
@@ -76,7 +76,7 @@ class Joc {
         console.log(message, this.gameId);
       } catch (error) {
         console.error('Error creating new game:', error);
-      }
+      }*/
       //console.log(`Prepartida comenzará, tiempo restante: ${this.prepartidaDuracio / 1000} segundos.`);
     }
     const tempsRestant = this.properInici - tempsActual;
