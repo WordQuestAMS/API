@@ -41,7 +41,7 @@ class Joc {
       this.properInici = tempsActual + this.partidaDuracio;
       try {
         // Call the endpoint to create a new game when a user connects to the WebSocket server
-        const startGameResponse = await axios.post('http://localhost:3000/api/games/startGame', { gameId: gameId });
+        const startGameResponse = await axios.post('http://localhost:3000/api/games/startGame', { gameId: this.gameId });
         const message = response.data.message;
         this.gameId = response.data.data; 
         console.log(message, this.gameId);
@@ -55,7 +55,7 @@ class Joc {
       this.properInici = tempsActual + this.pausaDuracio;
       try {
         // Call the endpoint to create a new game when a user connects to the WebSocket server
-        const startGameResponse = await axios.post('http://localhost:3000/api/games/endGame', { gameId: gameId });
+        const startGameResponse = await axios.post('http://localhost:3000/api/games/endGame', { gameId: this.gameId });
         const message = response.data.message;
         this.gameId = response.data.data; 
         console.log(message, this.gameId);
@@ -124,7 +124,27 @@ class Joc {
     }
     return -1; // Palabra no encontrada
   }
+
+  fetchPlayerData = async () => {
+    try {
+      const response = await axios.get('http://localhost:3000/api/games/userScore', {gameId: this.gameId});
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching player data:', error.message);
+      return []; // Return an empty array if there's an error
+    }
+  };
+
+  sendPlayerData = async () => {
+    const players = await fetchPlayerData();
+    io.emit('jugadores', players);
+  };
+
+  
 }
+
+
+
 
 
 const joc = new Joc(60000, 60000, 20000);  // 1 minuto de juego, 1 minuto de pausa, 20 segundos de prepartida
@@ -132,8 +152,7 @@ const joc = new Joc(60000, 60000, 20000);  // 1 minuto de juego, 1 minuto de pau
 io.on('connection', (socket) => {
   console.log('Usuario conectado');
 
-  
-
+  sendPlayerData();
 
   socket.emit('ESTADO_INICIAL', joc.consultaTempsRestant());
 

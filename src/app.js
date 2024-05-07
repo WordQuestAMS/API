@@ -202,7 +202,7 @@ app.post('/api/games/addUser', async (req, res) => {
     }
 
     // Check if the game exists
-    const game = await Game.findById(gameId);
+    const game = await Partidas.findById(gameId);
     if (!game) {
       return res.status(404).json({ success: false, message: 'Game not found' });
     }
@@ -234,7 +234,7 @@ app.post('/api/games/removeUser', async (req, res) => {
     }
 
     // Check if the game exists
-    const game = await Game.findById(gameId);
+    const game = await Partidas.findById(gameId);
     if (!game) {
       return res.status(404).json({ success: false, message: 'Game not found' });
     }
@@ -266,7 +266,7 @@ app.post('/api/games/updateScore', async (req, res) => {
     }
 
     // Check if the game exists
-    const game = await Game.findById(gameId);
+    const game = await Partidas.findById(gameId);
     if (!game) {
       return res.status(404).json({ success: false, message: 'Game not found' });
     }
@@ -292,6 +292,28 @@ app.post('/api/games/updateScore', async (req, res) => {
   } catch (error) {
     console.error('Error updating score:', error);
     return res.status(500).json({ success: false, message: 'Failed to update score. Please try again later.' });
+  }
+});
+
+
+app.get('/api/games/userScore', async (req, res) => {
+  try {
+    const currentGameId = 'CURRENT_GAME_ID';
+    
+    // Find all users who participated in the current game
+    const users = await User.find({ 'Partidas.partida_id': currentGameId });
+    
+    // Calculate total score for each user
+    const userScores = users.map(user => ({
+      userId: user._id,
+      nombre: user.nickname,
+      puntos: user.games.find(game => Partidas.partida_id.toString() === currentGameId).score
+    }));
+
+    res.status(200).json(userScores);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Failed to fetch user scores' });
   }
 });
 
