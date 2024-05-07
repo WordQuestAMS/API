@@ -45,12 +45,12 @@ app.get('/api/events/:id', async (req, res) => {
 app.post('/api/user/register', async (req, res) => {
   try {
     const { name, email, phone_number, avatar } = req.body;
-
+    Console.log("Ha llegado aqui 1");
     // Validate input parameters
     if (!name || !email || !phone_number || !avatar) {
       return res.status(400).json({ status: 'ERROR', message: 'Missing input parameters' });
     }
-
+    Console.log("Ha llegado aqui 2");
     // Generate UUID for the user
     const uuidValue = uuidv4();
 
