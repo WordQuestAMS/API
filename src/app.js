@@ -129,7 +129,7 @@ app.post('/api/games/newGame', async (req, res) => {
     const newPartida = new Partidas({
       start_time: null, 
       end_time: null, 
-      players: [null, null] 
+      players: [] 
     });
 
     // Save the new game entry to the database
