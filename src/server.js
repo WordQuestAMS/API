@@ -156,7 +156,7 @@ class Joc {
 
 
 
-const joc = new Joc(10000, 10000, 10000);  // 1 minuto de juego, 1 minuto de pausa, 20 segundos de prepartida
+const joc = new Joc(60000, 60000, 10000);  // 1 minuto de juego, 1 minuto de pausa, 20 segundos de prepartida
 
 io.on('connection', (socket) => {
   console.log('Usuario conectado');
