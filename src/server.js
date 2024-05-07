@@ -41,7 +41,7 @@ class Joc {
       this.properInici = tempsActual + this.partidaDuracio;
       try {
         // Call the endpoint to create a new game when a user connects to the WebSocket server
-        const startGameResponse = await axios.post('http://localhost:3000/api/games/startGame', { gameId: this.gameId });
+        const startGameResponse = await axios.post('https://roscodrom3.ieti.site/api/games/startGame', { gameId: this.gameId });
         const message = response.data.message;
         this.gameId = response.data.data; 
         console.log(message, this.gameId);
@@ -55,7 +55,7 @@ class Joc {
       this.properInici = tempsActual + this.pausaDuracio;
       try {
         // Call the endpoint to create a new game when a user connects to the WebSocket server
-        const startGameResponse = await axios.post('http://localhost:3000/api/games/endGame', { gameId: this.gameId });
+        const startGameResponse = await axios.post('https://roscodrom3.ieti.site/api/games/endGame', { gameId: this.gameId });
         const message = response.data.message;
         this.gameId = response.data.data; 
         console.log(message, this.gameId);
@@ -70,7 +70,7 @@ class Joc {
       this.properInici = tempsActual + this.prepartidaDuracio;
       try {
         // Call the endpoint to create a new game when a user connects to the WebSocket server
-        const response = await axios.post('http://localhost:3000/api/games/newGame');
+        const response = await axios.post('https://roscodrom3.ieti.site/api/games/newGame');
         const message = response.data.message;
         this.gameId = response.data.data; 
         console.log(message, this.gameId);
@@ -127,7 +127,7 @@ class Joc {
 
   fetchPlayerData = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/api/games/userScore', {gameId: this.gameId});
+      const response = await axios.get('https://roscodrom3.ieti.site/api/games/userScore', {gameId: this.gameId});
       return response.data;
     } catch (error) {
       console.error('Error fetching player data:', error.message);
@@ -166,7 +166,7 @@ io.on('connection', (socket) => {
     console.log(`Nickname: ${data.nickname}, API_KEY: ${data.apiKey}`);
     try {
       // Call the endpoint to add the user to the game in MongoDB
-      const altaResponse = await axios.post('http://localhost:3000/api/games/addUser', {
+      const altaResponse = await axios.post('https://roscodrom3.ieti.site/api/games/addUser', {
         gameId: joc.gameId, 
         nickname: data.nickname,
         apiKey: data.apiKey
@@ -198,7 +198,7 @@ io.on('connection', (socket) => {
         const puntuacion = puntuacionPalabra.calcularPuntuacion(palabra);
         console.log(`La palabra '${palabra}' existe y su puntuación es ${puntuacion}.`);
         try {
-          const response = await axios.post('http://localhost:3000/api/games/updateScore', {
+          const response = await axios.post('https://roscodrom3.ieti.site/api/games/updateScore', {
           gameId: joc.gameId,
           apiKey: apiKey,
           score: puntuacion
@@ -218,7 +218,7 @@ io.on('connection', (socket) => {
     console.log('Usuario desconectado');
     try {
       // Call the endpoint to remove the user from the game in MongoDB if the game is in the pregame state
-      const removeUserResponse = await axios.post('http://localhost:3000/api/games/removeUser', {
+      const removeUserResponse = await axios.post('https://roscodrom3.ieti.site/api/games/removeUser', {
         apiKey: data.apiKey,
         gameId: joc.gameId
       });
