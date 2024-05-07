@@ -152,7 +152,6 @@ const joc = new Joc(60000, 60000, 20000);  // 1 minuto de juego, 1 minuto de pau
 io.on('connection', (socket) => {
   console.log('Usuario conectado');
 
-  sendPlayerData();
 
   socket.emit('ESTADO_INICIAL', joc.consultaTempsRestant());
 
