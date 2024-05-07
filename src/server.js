@@ -209,7 +209,7 @@ io.on('connection', (socket) => {
         socket.emit('RESULTADO_PALABRA', { palabra: palabra, existe: true, puntuacion: puntuacion });
       } else {
         console.log(`La palabra '${palabra}' no existe.`);
-        socket.emit('RESULTADO_PALABRA', { palabra: palabra, existe: false });
+        socket.emit('RESULTADO_PALABRA', { palabra: palabra, existe: false, puntuacion: 0 });
       }
     });
   });
