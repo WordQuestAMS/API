@@ -86,7 +86,16 @@ class Joc {
   consultaTempsRestant() {
     const tempsActual = Date.now();
     const tempsRestant = this.properInici - tempsActual;
-    return { tempsRestant, enPartida: this.enPartida, enPrepartida: this.enPrepartida };
+
+    // Calculamos el tiempo restante para la fase actual y mantenemos los otros tiempos como undefined
+    return {
+      enPartida: this.enPartida,
+      enPrepartida: this.enPrepartida,
+      enPausa: !this.enPartida && !this.enPrepartida,
+      tempsEnPartida: this.enPartida ? tempsRestant : undefined,
+      tempsEnPrepartida: this.enPrepartida ? tempsRestant : undefined,
+      tempsEnPausa: (!this.enPartida && !this.enPrepartida) ? tempsRestant : undefined
+    };
   }
 
   buscarPalabra(palabra, callback) {
@@ -147,7 +156,7 @@ class Joc {
 
 
 
-const joc = new Joc(60000, 60000, 20000);  // 1 minuto de juego, 1 minuto de pausa, 20 segundos de prepartida
+const joc = new Joc(10000, 10000, 10000);  // 1 minuto de juego, 1 minuto de pausa, 20 segundos de prepartida
 
 io.on('connection', (socket) => {
   console.log('Usuario conectado');
